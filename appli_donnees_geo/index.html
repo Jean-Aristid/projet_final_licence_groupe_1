@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte avec Leaflet, OpenStreetMap et Vue.js</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="index.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>Carte avec OpenStreetMap</h1>
+        <div id="controls">
+            <input type="text" id="location-input" v-model="location" placeholder="Entrez un lieu" />
+            <button @click="chercher">Chercher</button>
+            <button @click="imprimer">Imprimer les coordonnées</button>
+        </div>
+        <div id="map"></div>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
