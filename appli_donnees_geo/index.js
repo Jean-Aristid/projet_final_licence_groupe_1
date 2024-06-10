@@ -32,7 +32,10 @@ var app = new Vue({
                             this.map.removeLayer(this.marker);
                         }
                         this.marker = L.marker([lat, lon]).addTo(this.map)
-                            .bindPopup('<b>' + name + '</b>')
+                            .bindPopup('<b>' + name + '</b>'
+                            + '<br>' + '<b> latitude : ' + lat + '</b>'
+                            + '<br>' + '<b> longitude : ' + lon + '</b>'
+                            )
                             .openPopup();
                         this.currentLocation = { name: name, lat: lat, lon: lon };
                     } else {
