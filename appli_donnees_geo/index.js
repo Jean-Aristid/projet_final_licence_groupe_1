@@ -72,3 +72,13 @@ var app = new Vue({
     }
 });
 
+window.addEventListener("load", () => {
+	let a = document.getElementById("location-input");
+	
+	a.addEventListener("keydown", (e) => {
+		if(e.key === "Enter")
+		{
+			app.chercher();
+		}
+	});
+})
