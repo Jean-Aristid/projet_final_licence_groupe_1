@@ -8,6 +8,10 @@ var app = new Vue({
     },
     mounted() {
         this.initialiserMap();
+        document.addEventListener('keydown', this.handleShortcut);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleShortcut);
     },
     methods: {
         initialiserMap() {
@@ -19,7 +23,7 @@ var app = new Vue({
 
             this.map.on('click', this.on_map_click);
         },
-        chercher(){
+        chercher() {
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.location}`)
                 .then(response => response.json())
                 .then(data => {
@@ -52,6 +56,12 @@ var app = new Vue({
                 .openPopup();
             this.currentLocation = { name: 'Coordonnées cliquées', lat: lat, lon: lon };
         },
+        handleShortcut(event) {
+            if (event.ctrlKey && event.key === 'a') {
+                event.preventDefault();
+                this.$refs.locationInput.focus();
+            }
+        },
         imprimer() {
             if (this.currentLocation.name === '' && this.currentLocation.lat === '' && this.currentLocation.lon === '') {
                 alert('Aucune information de lieu disponible pour imprimer.');
@@ -71,4 +81,3 @@ var app = new Vue({
         }
     }
 });
-
