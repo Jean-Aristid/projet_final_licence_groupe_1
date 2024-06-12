@@ -12,7 +12,7 @@
     <div id="app">
         <h1>Carte avec OpenStreetMap</h1>
         <div id="controls">
-            <input type="text" id="location-input" v-model="location" placeholder="Entrez un lieu" />
+            <input type="text" id="location-input" v-model="location" ref="locationInput" placeholder="Entrez un lieu" />
             <button @click="chercher">Chercher</button>
             <button @click="imprimer">Imprimer les coordonnées</button>
             <label>
