@@ -94,6 +94,18 @@ var app = new Vue({
                     if (dataStart && dataStart.length > 0) {
                         var startLat = dataStart[0].lat;
                         var startLon = dataStart[0].lon;
+                        var start_name = dataStart[0].display_name;
+                        this.map.setView([startLat, startLon], 13);
+                        /***if (this.marker) {
+                            this.map.removeLayer(this.marker);
+                        }***/
+                        this.marker = L.marker([startLat, startLon]).addTo(this.map)
+                            .bindPopup('<b>' + start_name + '</b>'
+                            + '<br>' + '<b> latitude : ' + startLat + '</b>'
+                            + '<br>' + '<b> longitude : ' + startLon + '</b>'
+                            )
+                            .openPopup();
+                       //this.currentLocation = { name: name, lat: startLat, lon: startLon };
                         // pour arrivée
                         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
                             .then(response => response.json())
@@ -101,6 +113,18 @@ var app = new Vue({
                                 if (dataEnd && dataEnd.length > 0) {
                                     var endLat = dataEnd[0].lat;
                                     var endLon = dataEnd[0].lon;
+                                    var end_name = dataEnd[0].display_name;
+                                    this.map.setView([endLat, endLon], 13);
+                                    /***if (this.marker) {
+                                        this.map.removeLayer(this.marker);
+                                    }***/
+                                    this.marker = L.marker([endLat, endLon]).addTo(this.map)
+                                        .bindPopup('<b>' + end_name + '</b>'
+                                        + '<br>' + '<b> latitude : ' + endLat + '</b>'
+                                        + '<br>' + '<b> longitude : ' + endLat + '</b>'
+                                        )
+                                        .openPopup();
+                                    //this.currentLocation = { name: name, lat: endLat, lon: endLon };
                                     // Requête chemins
                                     fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
                                         .then(response => response.json())
