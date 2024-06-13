@@ -2,9 +2,12 @@ var app = new Vue({
     el: '#app',
     data: {
         location: '',
+        startLocation: '',
+        endLocation: '',
         currentLocation: { name: '', lat: '', lon: '' },
         map: null,
-        marker: null
+        marker: null,
+        routeLayer: null
     },
     mounted() {
         this.initialiserMap();
@@ -82,6 +85,58 @@ var app = new Vue({
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        },
+        trouverChemin() {
+            //pour départ
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.startLocation}`)
+                .then(response => response.json())
+                .then(dataStart => {
+                    if (dataStart && dataStart.length > 0) {
+                        var startLat = dataStart[0].lat;
+                        var startLon = dataStart[0].lon;
+                        // pour arrivée
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
+                            .then(response => response.json())
+                            .then(dataEnd => {
+                                if (dataEnd && dataEnd.length > 0) {
+                                    var endLat = dataEnd[0].lat;
+                                    var endLon = dataEnd[0].lon;
+                                    // Requête chemins
+                                    fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
+                                        .then(response => response.json())
+                                        .then(routeData => {
+                                            if (routeData && routeData.routes && routeData.routes.length > 0) {
+                                                var route = routeData.routes[0].geometry;
+                                                if (this.routeLayer) {
+                                                    this.map.removeLayer(this.routeLayer);
+                                                }
+                                                this.routeLayer = L.geoJSON(route).addTo(this.map);
+                                                this.animerChemin(route.coordinates);
+                                            } else {
+                                                alert("Chemin non trouvé");
+                                            }
+                                        });
+                                } else {
+                                    alert("Lieu d'arrivée non trouvé");
+                                }
+                            });
+                    } else {
+                        alert("Lieu de départ non trouvé");
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        },
+        animerChemin(coordinates) {
+            let index = 0;
+            const polyline = L.polyline([], { color: 'blue' }).addTo(this.map);
+            const addPoint = () => {
+                if (index < coordinates.length) {
+                    polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
+                    index++;
+                    setTimeout(addPoint, 100); // vitesse
+                }
+            };
+            addPoint();
         }
     }
 });
@@ -96,4 +151,5 @@ window.addEventListener("load", () => {
 		}
 	});
 })
+
 
