@@ -63,6 +63,7 @@ var app = new Vue({
             if (event.ctrlKey && event.key === 'a') {
                 event.preventDefault();
                 this.$refs.locationInput.focus();
+
             }
         },
         imprimer() {
