@@ -12,6 +12,8 @@ h1 {
 }
 
 #controls {
+	display: flex;
+	flex-direction: row;
 	text-align: center;
 	margin: 40px;
 }
@@ -63,3 +65,13 @@ button:hover {
 #import:hover {
 	background-color: #0056b3;
 }
+
+
+
+#depart_arrivee{
+	display: flex ;
+	flex-direction: column ;
+	margin-left : 12px ;
+}
+
+

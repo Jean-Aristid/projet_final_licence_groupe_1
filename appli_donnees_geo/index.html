@@ -21,15 +21,35 @@
         <h1>Carte avec OpenStreetMap et Vue.js</h1>
 
         <div id="controls">
-            <input type="text" id="location-input" v-model="location" ref="locationInput" placeholder="Entrez un lieu" />
-            <button @click="chercher">Chercher</button>
-	    <input type="text" v-model="startLocation" placeholder="Départ"/>
-	    <input type="text" v-model="endLocation" placeholder="Arrivée"/>
-            <button @click="trouverChemin">Trouver Chemin </button> 
-            <button @click="imprimer">Imprimer</button>
+            <div>
+                <input type="text" id="location-input" v-model="location" ref="locationInput" placeholder="Entrez un lieu" />
+            </div>
+
+            <div>
+                <button @click="chercher">Chercher</button>
+            </div>
+
+            <div id="depart_arrivee">
+                <div id="depart">
+                    <input type="text" v-model="startLocation" style="height: 30px;" placeholder="Départ"/>
+                </div>
+
+                <div id="arrivee">
+                    <input type="text" v-model="endLocation" style="height: 30px;" placeholder="Arrivée"/>
+                </div>
+            </div>
+
+            <div>
+                <button @click="trouverChemin">Trouver Chemin </button> 
+            </div>
+
+            <div>
+                <button @click="imprimer">Imprimer</button>
+            </div>
+
             <label>
-            	<span id="import">Importer</span>
-            	<input type="file" id="fichier" name="fichier" accept=".gpx, .kml"/>
+                <span id="import">Importer</span>
+                <input type="file" id="fichier" name="fichier" accept=".gpx, .kml"/>
             </label>
         </div>
         

@@ -7,7 +7,10 @@ var app = new Vue({
         currentLocation: { name: '', lat: '', lon: '' },
         map: null,
         marker: null,
-        routeLayer: null
+        start_marker: null,
+        end_marker: null,
+        routeLayer: null,
+        polyline: null, 
     },
     mounted() {
         this.initialiserMap();
@@ -96,16 +99,16 @@ var app = new Vue({
                         var startLon = dataStart[0].lon;
                         var start_name = dataStart[0].display_name;
                         this.map.setView([startLat, startLon], 13);
-                        /***if (this.marker) {
-                            this.map.removeLayer(this.marker);
-                        }***/
-                        this.marker = L.marker([startLat, startLon]).addTo(this.map)
+                        if (this.start_marker) {
+                            this.map.removeLayer(this.start_marker);
+                        }
+                        this.start_marker = L.marker([startLat, startLon]).addTo(this.map)
                             .bindPopup('<b>' + start_name + '</b>'
                             + '<br>' + '<b> latitude : ' + startLat + '</b>'
                             + '<br>' + '<b> longitude : ' + startLon + '</b>'
                             )
                             .openPopup();
-                       //this.currentLocation = { name: name, lat: startLat, lon: startLon };
+                       this.currentLocation = { name: start_name, lat: startLat, lon: startLon };
                         // pour arrivée
                         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
                             .then(response => response.json())
@@ -115,16 +118,16 @@ var app = new Vue({
                                     var endLon = dataEnd[0].lon;
                                     var end_name = dataEnd[0].display_name;
                                     this.map.setView([endLat, endLon], 13);
-                                    /***if (this.marker) {
-                                        this.map.removeLayer(this.marker);
-                                    }***/
-                                    this.marker = L.marker([endLat, endLon]).addTo(this.map)
+                                    if (this.end_marker) {
+                                        this.map.removeLayer(this.end_marker);
+                                    }
+                                    this.end_marker = L.marker([endLat, endLon]).addTo(this.map)
                                         .bindPopup('<b>' + end_name + '</b>'
                                         + '<br>' + '<b> latitude : ' + endLat + '</b>'
                                         + '<br>' + '<b> longitude : ' + endLat + '</b>'
                                         )
                                         .openPopup();
-                                    //this.currentLocation = { name: name, lat: endLat, lon: endLon };
+                                    this.currentLocation = { name: end_name, lat: endLat, lon: endLon };
                                     // Requête chemins
                                     fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
                                         .then(response => response.json())
@@ -153,6 +156,12 @@ var app = new Vue({
         animerChemin(coordinates) {
             let index = 0;
             const polyline = L.polyline([], { color: 'blue' }).addTo(this.map);
+
+            if(this.polyline){
+                this.map.removeLayer(this.polyline) ; 
+            }
+
+            this.polyline = polyline ; 
             const addPoint = () => {
                 if (index < coordinates.length) {
                     polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
@@ -161,7 +170,8 @@ var app = new Vue({
                 }
             };
             addPoint();
-        }
+        }, 
+
     }
 });
 
