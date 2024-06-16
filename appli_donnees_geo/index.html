@@ -26,16 +26,20 @@
             </div>
 
             <div>
-                <button @click="chercher">Chercher</button>
+                <button @click="chercher" >Chercher</button>
+            </div>
+
+            <div>
+                <button @click="imprimer">Imprimer</button>
             </div>
 
             <div id="depart_arrivee">
                 <div id="depart">
-                    <input type="text" v-model="startLocation" style="height: 30px;" placeholder="Départ"/>
+                    <input type="text" v-model="startLocation" style="height: 30px; width: 300px;" placeholder="Départ"/>
                 </div>
 
                 <div id="arrivee">
-                    <input type="text" v-model="endLocation" style="height: 30px;" placeholder="Arrivée"/>
+                    <input type="text" v-model="endLocation" style="height: 30px;  width: 300px;" placeholder="Arrivée"/>
                 </div>
             </div>
 
@@ -43,9 +47,14 @@
                 <button @click="trouverChemin">Trouver Chemin </button> 
             </div>
 
+           
+
             <div>
-                <button @click="imprimer">Imprimer</button>
+                <button @click="exporterCheminGpx"> Exporter Chemin Gpx </button> 
             </div>
+           
+
+           
 
             <label>
                 <span id="import">Importer</span>

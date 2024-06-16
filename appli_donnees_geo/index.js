@@ -10,7 +10,10 @@ var app = new Vue({
         start_marker: null,
         end_marker: null,
         routeLayer: null,
-        polyline: null, 
+        polyline: null,
+        start_coordinates: { name: '', lat: '', lon: '' },
+        end_coordinates: { name: '', lat: '', lon: '' }, 
+        coordinates: [],
     },
     mounted() {
         this.initialiserMap();
@@ -108,7 +111,7 @@ var app = new Vue({
                             + '<br>' + '<b> longitude : ' + startLon + '</b>'
                             )
                             .openPopup();
-                       this.currentLocation = { name: start_name, lat: startLat, lon: startLon };
+                       this.start_coordinates = { name: start_name, lat: startLat, lon: startLon };
                         // pour arrivée
                         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
                             .then(response => response.json())
@@ -124,10 +127,10 @@ var app = new Vue({
                                     this.end_marker = L.marker([endLat, endLon]).addTo(this.map)
                                         .bindPopup('<b>' + end_name + '</b>'
                                         + '<br>' + '<b> latitude : ' + endLat + '</b>'
-                                        + '<br>' + '<b> longitude : ' + endLat + '</b>'
+                                        + '<br>' + '<b> longitude : ' + endLon + '</b>'
                                         )
                                         .openPopup();
-                                    this.currentLocation = { name: end_name, lat: endLat, lon: endLon };
+                                    this.end_coordinates = { name: end_name, lat: endLat, lon: endLon };
                                     // Requête chemins
                                     fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
                                         .then(response => response.json())
@@ -138,6 +141,7 @@ var app = new Vue({
                                                     this.map.removeLayer(this.routeLayer);
                                                 }
                                                 this.routeLayer = L.geoJSON(route).addTo(this.map);
+                                                this.coordinates = route.coordinates;
                                                 this.animerChemin(route.coordinates);
                                             } else {
                                                 alert("Chemin non trouvé");
@@ -166,11 +170,76 @@ var app = new Vue({
                 if (index < coordinates.length) {
                     polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
                     index++;
-                    setTimeout(addPoint, 100); // vitesse
+                    setTimeout(addPoint, 20); // vitesse
                 }
             };
             addPoint();
         }, 
+
+        exporterCheminGpx(){
+            if (this.coordinates.length === 0) {
+                alert("Pas de coordonnées pour exporter");
+                return;
+            }
+            const nom_fichier = prompt("donner_un_nom_à_votre_fichier :") ; 
+
+            if(nom_fichier === '' || nom_fichier === undefined || nom_fichier === null){
+                alert("donner un nom au fichier") ;
+            }else{
+                const gpxContent = this.generateGPXContent(this.coordinates, this.start_coordinates, this.end_coordinates);
+                this.downloadGPX(gpxContent,  nom_fichier+'.gpx');
+            }
+        },
+
+        generateGPXContent(coordinates, start_coordinates,end_coordinates) {
+            let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
+            <gpx version="1.1" creator="YourAppName" xmlns="http://www.topografix.com/GPX/1/1">
+                <trk>
+                    <name> Itinéraire au format GPX 
+                       de  ${start_coordinates.name} 
+                       à   ${end_coordinates.name}
+                    </name>
+                    <trkseg>`;
+
+                    if (start_coordinates) {
+                        gpxContent += `
+                        <trkpt lat="${start_coordinates.lat}" lon="${start_coordinates.lon}">
+                            <ele>${start_coordinates.name}</ele>
+                        </trkpt>`;
+                    }
+
+                    coordinates.forEach(coord => {
+                        gpxContent += `
+                        <trkpt lat="${coord[1]}" lon="${coord[0]}">
+                            <ele>Point</ele>
+                        </trkpt>`;
+                    });
+
+                    if (end_coordinates) {
+                        gpxContent += `
+                        <trkpt lat="${end_coordinates.lat}" lon="${end_coordinates.lon}">
+                            <ele>${end_coordinates.name}</ele>
+                        </trkpt>`;
+                    }
+
+                gpxContent += `
+                    </trkseg>
+                </trk>
+            </gpx>`;
+
+            return gpxContent;
+        },
+        downloadGPX(content, filename) {
+            const blob = new Blob([content], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
     }
 });
