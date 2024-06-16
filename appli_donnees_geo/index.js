@@ -68,17 +68,38 @@ var app = new Vue({
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
+        },
+        lecture() {
+		let file = document.getElementById("fichier");
+		//let lect = new FileReader();
+		file.addEventListener("change", () => {
+			let lect = new FileReader();
+			lect.onload = function () {
+				alert("contenu du fichier " + file.files[0] + ":\n\n" + lect.result);
+			}
+			lect.readAsText(file.files[0]);
+			console.log(lect);
+			
+		});
+		/*if(file) {
+			lect.readAsText(file);
+		}*/
+		//console.log(lect);
+	}
     }
 });
 
 window.addEventListener("load", () => {
 	let a = document.getElementById("location-input");
+	let b = document.getElementById("import");
 	
 	a.addEventListener("keydown", (e) => {
 		if(e.key === "Enter")
 		{
 			app.chercher();
 		}
+	});
+	b.addEventListener("click", () => {
+		app.lecture();
 	});
 })
