@@ -71,9 +71,22 @@ var app = new Vue({
         handleShortcut(event) {
             if (event.ctrlKey && event.key === 'a') {
                 event.preventDefault();
+                this.$refs.endLocation.focus();
+
+            }
+
+            if (event.ctrlKey && event.key === 'z') {
+                event.preventDefault();
+                this.$refs.startLocation.focus();
+
+            }
+
+            if (event.ctrlKey && event.key === 'q') {
+                event.preventDefault();
                 this.$refs.locationInput.focus();
 
             }
+            
         },
         imprimer() {
             if (this.currentLocation.name === '' && this.currentLocation.lat === '' && this.currentLocation.lon === '') {
