@@ -172,7 +172,7 @@ var app = new Vue({
         },
         animerChemin(coordinates) {
             let index = 0;
-            const polyline = L.polyline([], { color: 'blue' }).addTo(this.map);
+            const polyline = L.polyline([], { color: 'red' }).addTo(this.map);
 
             if(this.polyline){
                 this.map.removeLayer(this.polyline) ; 
@@ -183,7 +183,7 @@ var app = new Vue({
                 if (index < coordinates.length) {
                     polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
                     index++;
-                    setTimeout(addPoint, 20); // vitesse
+                    setTimeout(addPoint, 10); // vitesse
                 }
             };
             addPoint();
@@ -217,21 +217,21 @@ var app = new Vue({
                     if (start_coordinates) {
                         gpxContent += `
                         <trkpt lat="${start_coordinates.lat}" lon="${start_coordinates.lon}">
-                            <ele>${start_coordinates.name}</ele>
+                            <desc>${start_coordinates.name}</desc>
                         </trkpt>`;
                     }
 
                     coordinates.forEach(coord => {
                         gpxContent += `
                         <trkpt lat="${coord[1]}" lon="${coord[0]}">
-                            <ele>Point</ele>
+                            <desc>Point</desc>
                         </trkpt>`;
                     });
 
                     if (end_coordinates) {
                         gpxContent += `
                         <trkpt lat="${end_coordinates.lat}" lon="${end_coordinates.lon}">
-                            <ele>${end_coordinates.name}</ele>
+                            <desc>${end_coordinates.name}</desc>
                         </trkpt>`;
                     }
 
