@@ -73,21 +73,18 @@ var app = new Vue({
             URL.revokeObjectURL(url);
         },
         trouverChemin() {
-            //pour départ
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.startLocation}`)
                 .then(response => response.json())
                 .then(dataStart => {
                     if (dataStart && dataStart.length > 0) {
                         var startLat = dataStart[0].lat;
                         var startLon = dataStart[0].lon;
-                        // pour arrivée
                         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
                             .then(response => response.json())
                             .then(dataEnd => {
                                 if (dataEnd && dataEnd.length > 0) {
                                     var endLat = dataEnd[0].lat;
                                     var endLon = dataEnd[0].lon;
-                                    // Requête chemins
                                     fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
                                         .then(response => response.json())
                                         .then(routeData => {
@@ -123,6 +120,26 @@ var app = new Vue({
                 }
             };
             addPoint();
+        },
+        chargerGPX(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const gpxData = e.target.result;
+                if (this.routeLayer) {
+                    this.map.removeLayer(this.routeLayer);
+                }
+                this.routeLayer = new L.GPX(gpxData, {
+                    async: true
+                }).on('loaded', (e) => {
+                    this.map.fitBounds(e.target.getBounds());
+                }).addTo(this.map);
+            };
+            reader.readAsText(file);
         }
     }
 });
