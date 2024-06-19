@@ -38,9 +38,9 @@ button:hover {
 }
 
 #map {
-	height: 600px;
+	height: 550px;
 	width: 80%;
-	margin: 0 auto;
+	margin: auto;
 	border: 2px solid #ccc;
 	border-radius: 10px;
 }
@@ -62,4 +62,8 @@ button:hover {
 
 #import:hover {
 	background-color: #0056b3;
+}
+
+#app{
+	margin : 0 ;
 }
