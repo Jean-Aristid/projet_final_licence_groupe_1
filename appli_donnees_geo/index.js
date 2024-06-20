@@ -7,7 +7,10 @@ var app = new Vue({
         currentLocation: { name: '', lat: '', lon: '' },
         map: null,
         marker: null,
-        routeLayer: null
+        routeLayer: null,
+        routeCoordinates: [],
+        segments: [],
+        segmentCount: 1 // Nombre de segments souhaité
     },
     mounted() {
         this.initialiserMap();
@@ -39,10 +42,7 @@ var app = new Vue({
                             this.map.removeLayer(this.marker);
                         }
                         this.marker = L.marker([lat, lon]).addTo(this.map)
-                            .bindPopup('<b>' + name + '</b>'
-                            + '<br>' + '<b> latitude : ' + lat + '</b>'
-                            + '<br>' + '<b> longitude : ' + lon + '</b>'
-                            )
+                            .bindPopup(`<b>${name}</b><br><b>latitude : ${lat}</b><br><b>longitude : ${lon}</b>`)
                             .openPopup();
                         this.currentLocation = { name: name, lat: lat, lon: lon };
                     } else {
@@ -58,7 +58,7 @@ var app = new Vue({
                 this.map.removeLayer(this.marker);
             }
             this.marker = L.marker([lat, lon]).addTo(this.map)
-                .bindPopup('<b>Coordonnées :</b><br>Latitude: ' + lat + '<br>Longitude: ' + lon)
+                .bindPopup(`<b>Coordonnées :</b><br>Latitude: ${lat}<br>Longitude: ${lon}`)
                 .openPopup();
             this.currentLocation = { name: 'Coordonnées cliquées', lat: lat, lon: lon };
         },
@@ -66,21 +66,17 @@ var app = new Vue({
             if (event.ctrlKey && event.key === 'a') {
                 event.preventDefault();
                 this.$refs.endLocation.focus();
-
             }
 
             if (event.ctrlKey && event.key === 'z') {
                 event.preventDefault();
                 this.$refs.startLocation.focus();
-
             }
 
             if (event.ctrlKey && event.key === 'q') {
                 event.preventDefault();
                 this.$refs.locationInput.focus();
-
             }
-            
         },
         imprimer() {
             if (this.currentLocation.name === '' && this.currentLocation.lat === '' && this.currentLocation.lon === '') {
@@ -93,14 +89,14 @@ var app = new Vue({
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
-            a.download = 'location_' + this.currentLocation.name + '.txt';
+            a.download = `location_${this.currentLocation.name}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         },
         trouverChemin() {
-            //pour départ
+            // pour départ
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.startLocation}`)
                 .then(response => response.json())
                 .then(dataStart => {
@@ -120,19 +116,23 @@ var app = new Vue({
                                         .then(routeData => {
                                             if (routeData && routeData.routes && routeData.routes.length > 0) {
                                                 var route = routeData.routes[0].geometry;
+                                                this.routeCoordinates = route.coordinates;
                                                 if (this.routeLayer) {
                                                     this.map.removeLayer(this.routeLayer);
                                                 }
                                                 this.routeLayer = L.geoJSON(route).addTo(this.map);
-                                                this.animerChemin(route.coordinates);
+                                                this.animerChemin(this.routeCoordinates);
+                                                this.decouperEnSegments();
                                             } else {
                                                 alert("Chemin non trouvé");
                                             }
-                                        });
+                                        })
+                                        .catch(error => console.error('Erreur:', error));
                                 } else {
                                     alert("Lieu d'arrivée non trouvé");
                                 }
-                            });
+                            })
+                            .catch(error => console.error('Erreur:', error));
                     } else {
                         alert("Lieu de départ non trouvé");
                     }
@@ -146,23 +146,46 @@ var app = new Vue({
                 if (index < coordinates.length) {
                     polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
                     index++;
-                    setTimeout(addPoint, 100); // vitesse
+                    setTimeout(addPoint, 100); // ajuster la vitesse ici
                 }
             };
             addPoint();
+        },
+        decouperEnSegments() {
+            const segmentCount = this.segmentCount;
+            const segmentLength = Math.floor(this.routeCoordinates.length / segmentCount);
+            this.segments = [];
+
+            for (let i = 0; i < segmentCount; i++) {
+                const start = i * segmentLength;
+                const end = (i === segmentCount - 1) ? this.routeCoordinates.length : (i + 1) * segmentLength;
+                this.segments.push(this.routeCoordinates.slice(start, end));
+            }
+
+            this.afficherSegments();
+        },
+        afficherSegments() {
+            if (this.routeLayer) {
+                this.map.removeLayer(this.routeLayer);
+            }
+            this.routeLayer = L.layerGroup().addTo(this.map);
+            for (let i = 0; i < this.segments.length; i++) {
+                L.polyline(this.segments[i].map(coord => [coord[1], coord[0]]), { color: this.getSegmentColor(i) }).addTo(this.routeLayer);
+            }
+        },
+        getSegmentColor(index) {
+            const colors = ['blue', 'green', 'red', 'purple', 'orange', 'yellow'];
+            return colors[index % colors.length];
         }
     }
 });
 
 window.addEventListener("load", () => {
-	let a = document.getElementById("location-input");
+    let a = document.getElementById("location-input");
 
-	a.addEventListener("keydown", (e) => {
-		if(e.key === "Enter")
-		{
-			app.chercher();
-		}
-	});
-})
-
-
+    a.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            app.chercher();
+        }
+    });
+});

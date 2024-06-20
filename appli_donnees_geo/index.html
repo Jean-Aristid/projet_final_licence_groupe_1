@@ -25,6 +25,8 @@
             <button @click="chercher">Chercher</button>
 	    <input type="text" v-model="startLocation" ref="startLocation" placeholder="Départ"/>
 	    <input type="text" v-model="endLocation" ref="endLocation" placeholder="Arrivée"/>
+        <input type="number" v-model="segmentCount" min="1" placeholder="Nombre de segments">
+
             <button @click="trouverChemin">Trouver Chemin </button> 
             <button @click="imprimer">Imprimer</button>
             <label>
