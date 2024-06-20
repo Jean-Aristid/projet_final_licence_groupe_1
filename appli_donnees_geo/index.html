@@ -44,13 +44,23 @@
             </div>
 
             <div>
-                <button @click="trouverChemin">Trouver Chemin </button> 
+                <button @click="afficherChoixTransport">Trouver Chemin</button>
+                <div v-if="afficherTransport">
+                    <button @click="trouverChemin('voiture')">Voiture</button>
+                    <button @click="trouverChemin('moto')">Moto</button>
+                    <button @click="trouverChemin('velo')">Vélo</button>
+                    <button @click="trouverChemin('pied')">À pied</button>
+                </div>
             </div>
 
            
 
             <div>
                 <button @click="exporterCheminGpx"> Exporter Chemin Gpx </button> 
+            </div>
+
+            <div>
+                <button @click="exporterCheminKml"> Exporter Chemin Kml </button> 
             </div>
            
 
