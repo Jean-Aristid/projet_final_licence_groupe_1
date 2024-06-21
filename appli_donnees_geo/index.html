@@ -5,14 +5,21 @@
     <title>Carte avec Leaflet et Vue.js</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
-<link rel="stylesheet" href="index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js"></script>
+    <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+    <link rel="stylesheet" href="index.css" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <style>
         #map {
             height: 600px;
-            width: 100%;
+            width: 80%;
         }
+        #controls {
+            width: 100px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -43,13 +50,29 @@
                 </div>
             </div>
 
-            <div>
-                <button @click="afficherChoixTransport">Trouver Chemin</button>
-                <div v-if="afficherTransport">
-                    <button @click="trouverChemin('voiture')">Voiture</button>
-                    <button @click="trouverChemin('moto')">Moto</button>
-                    <button @click="trouverChemin('velo')">Vélo</button>
-                    <button @click="trouverChemin('pied')">À pied</button>
+            <div class="choix_et_mode_transport">
+                <div>
+                    <button @click="afficherChoixTransport">Trouver Chemin</button>
+                </div>
+
+                <br>
+
+                <div v-if="afficherTransport" class="mode_de_transport">
+                    <div>
+                        <button @click="trouverChemin('voiture')">Voiture</button>
+                    </div>
+
+                    <div>
+                        <button @click="trouverChemin('moto')">Moto</button>
+                    </div>
+
+                    <div>
+                        <button @click="trouverChemin('velo')">Vélo</button>
+                    </div>
+
+                    <div>
+                        <button @click="trouverChemin('pied')">À pied</button>
+                    </div>
                 </div>
             </div>
 
@@ -63,13 +86,22 @@
                 <button @click="exporterCheminKml"> Exporter Chemin Kml </button> 
             </div>
            
-
-           
+            <!-- temporaire
+                <div>
+                    <button id="bouton_importer">
+                        <label for="fichier">importerFichierCarte</label>
+                    </button>
+                    <input id ="fichier" type="file" @change ="chargerFichierCarte"/>
+                </div>
+            -->
 
             <label>
                 <span id="import">Importer</span>
                 <input type="file" id="fichier" name="fichier" accept=".gpx, .kml"/>
             </label>
+
+
+
         </div>
         
         <div id="map"></div>

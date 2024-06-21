@@ -74,4 +74,15 @@ button:hover {
 	margin-left : 12px ;
 }
 
+.mode_de_transport{
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 200px;
+}
+
+
+#bouton_importer{
+	cursor:pointer;
+}
 

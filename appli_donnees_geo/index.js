@@ -14,8 +14,13 @@ var app = new Vue({
         start_coordinates: { name: '', lat: '', lon: '' },
         end_coordinates: { name: '', lat: '', lon: '' }, 
         coordinates: [],
-        afficherTransport: false,
-        instructionsList: [] 
+        afficherTransport: false, 
+        fileLayer: null,
+        marker_options: {
+            startIconUrl: 'https://www.mapbox.com/help/demos/custom-markers-gl-js/start.png',
+            endIconUrl: 'https://www.mapbox.com/help/demos/custom-markers-gl-js/end.png',
+            shadowUrl: ''
+        }
     },
     mounted() {
         this.initialiserMap();
@@ -241,7 +246,6 @@ var app = new Vue({
                                                 }
                                                 this.routeLayer = L.geoJSON(route).addTo(this.map);
                                                 this.coordinates = route.coordinates;
-                                                this.afficherInstructions(instructions);
                                                 this.animerChemin(route.coordinates);
                                             } else {
                                                 alert("Chemin non trouvé pour le mode de transport sélectionné.");
@@ -256,35 +260,6 @@ var app = new Vue({
                     }
                 })
                 .catch(error => console.error('Erreur:', error));
-        },
-        afficherInstructions(instructions) {
-            // Réinitialiser la liste des instructions à chaque appel
-            this.instructionsList = [];
-
-            // Parcourir les instructions obtenues
-            instructions.forEach(step => {
-                // Récupérer le texte de l'instruction (par exemple : 'Continuez sur Rue de Rivoli')
-                let instructionText = step.instruction;
-
-                // Récupérer la distance de l'étape (en mètres)
-                let distance = step.distance;
-
-                // Récupérer la durée de l'étape (en secondes)
-                let duration = step.duration;
-
-                // Convertir la durée en minutes et secondes
-                let durationText = `${Math.floor(duration / 60)} min ${duration % 60} s`;
-
-                // Construire le texte complet de l'instruction avec distance et durée
-                let fullInstructionText = `${instructionText} (${distance} m, ${durationText})`;
-
-                // Ajouter l'instruction à la liste à afficher
-                this.instructionsList.push(fullInstructionText);
-            });
-
-            // Vous pouvez ensuite utiliser cette liste dans votre interface utilisateur
-            // Pour l'afficher comme vous le souhaitez, par exemple dans un élément HTML <ul>
-            console.log(this.instructionsList);
         },
         animerChemin(coordinates) {
             let index = 0;
@@ -436,9 +411,145 @@ var app = new Vue({
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        },
+        chargerFichierCarte(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                alert('Aucun fichier sélectionné');
+                return;
+            }
+    
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileContent = e.target.result;
+    
+                if (file.name.endsWith('.gpx')) {
+                    this.chargerGPX(fileContent);
+                } else if (file.name.endsWith('.kml')) {
+                    this.chargerKML(fileContent);
+                } else {
+                    alert('Format de fichier non supporté. Veuillez charger un fichier GPX ou KML.');
+                }
+            };
+            reader.readAsText(file);
+        },
+        /* version 1 
+        chargerGPX(gpxData) {
+            if (this.fileLayer) {
+                this.map.removeLayer(this.fileLayer);
+            }
+            this.fileLayer = new L.GPX(gpxData, {
+                async: true,
+            }).on('loaded', (e) => {
+                const gpx = e.target;
+                this.map.fitBounds(gpx.getBounds());
+
+                const start = gpx.getStartMarker().getLatLng();
+                const end = gpx.getEndMarker().getLatLng();
+
+                this.addMarker(start, 'Départ');
+                this.addMarker(end, 'Arrivée');
+            }).addTo(this.map);
+        },
+        chargerKML(kmlData) {
+            if (this.fileLayer) {
+                this.map.removeLayer(this.fileLayer);
+            }
+            this.fileLayer = omnivore.kml.parse(kmlData);
+            this.fileLayer.on('ready', () => {
+                this.map.fitBounds(this.fileLayer.getBounds());
+
+                const coordinates = this.fileLayer.getLayers()[0].feature.geometry.coordinates;
+                const start = [coordinates[0][1], coordinates[0][0]];
+                const end = [coordinates[coordinates.length - 1][1], coordinates[coordinates.length - 1][0]];
+
+                this.addMarker(start, 'Départ');
+                this.addMarker(end, 'Arrivée');
+            }).addTo(this.map);
+        },
+        addMarker(latlng, label) {
+            const marker = L.marker(latlng).addTo(this.map)
+                .bindPopup(`<b>${label}</b><br>Latitude: ${latlng[0]}<br>Longitude: ${latlng[1]}`)
+                .openPopup();
+            
+            if (label === 'Départ') {
+                if (this.start_marker) {
+                    this.map.removeLayer(this.start_marker);
+                }
+                this.start_marker = marker;
+            } else if (label === 'Arrivée') {
+                if (this.end_marker) {
+                    this.map.removeLayer(this.end_marker);
+                }
+                this.end_marker = marker;
+            }
+        }*/
+
+        /* version 2 
+        chargerGPX(gpxData) {
+            if (this.fileLayer) {
+                this.map.removeLayer(this.fileLayer);
+            }
+            this.fileLayer = new L.GPX(gpxData, {
+                async: true,
+            }).on('loaded', (e) => {
+                const gpx = e.target;
+                this.map.fitBounds(gpx.getBounds());
+
+                const start = gpx.getStartMarker().getLatLng();
+                const end = gpx.getEndMarker().getLatLng();
+
+                this.addMarker(start, 'Départ', this.marker_options.startIconUrl);
+                this.addMarker(end, 'Arrivée', this.marker_options.endIconUrl);
+            }).addTo(this.map);
+        },
+        chargerKML(kmlData) {
+            if (this.fileLayer) {
+                this.map.removeLayer(this.fileLayer);
+            }
+            this.fileLayer = omnivore.kml.parse(kmlData);
+            this.fileLayer.on('ready', () => {
+                this.map.fitBounds(this.fileLayer.getBounds());
+
+                const coordinates = this.fileLayer.getLayers()[0].feature.geometry.coordinates;
+                const start = [coordinates[0][1], coordinates[0][0]];
+                const end = [coordinates[coordinates.length - 1][1], coordinates[coordinates.length - 1][0]];
+
+                this.addMarker(start, 'Départ', this.marker_options.startIconUrl);
+                this.addMarker(end, 'Arrivée', this.marker_options.endIconUrl);
+            }).addTo(this.map);
+        },
+        addMarker(latlng, label, iconUrl) {
+            const markerIcon = L.icon({
+                iconUrl: iconUrl,
+                shadowUrl: this.marker_options.shadowUrl,
+                iconSize: [25, 41], // taille de l'icône
+                iconAnchor: [12, 41], // point de l'icône qui correspondra à la position du marqueur
+                popupAnchor: [1, -34], // point depuis lequel la popup doit s'ouvrir par rapport à l'iconAnchor
+                shadowSize: [41, 41] // taille de l'ombre
+            });
+
+            
+            const marker = L.marker(latlng, { icon: markerIcon }).addTo(this.map)
+                .bindPopup(`<b>${label}</b><br>Latitude: ${latlng[0]}<br>Longitude: ${latlng[1]}`)
+                .openPopup();
+            
+            if (label === 'Départ') {
+                if (this.start_marker) {
+                    this.map.removeLayer(this.start_marker);
+                }
+                this.start_marker = marker;
+            } else if (label === 'Arrivée') {
+                if (this.end_marker) {
+                    this.map.removeLayer(this.end_marker);
+                }
+                this.end_marker = marker;
+            }
         }
+        */ 
 
     }
+    
 });
 
 window.addEventListener("load", () => {
