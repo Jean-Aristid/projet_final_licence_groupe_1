@@ -50,34 +50,40 @@
                 </div>
             </div>
 
-            <div class="choix_et_mode_transport">
+            
+            <div>
                 <div>
-                    <button @click="afficherChoixTransport">Trouver Chemin</button>
+                    <button @click="trouverChemin">Trouver Chemin</button>
                 </div>
 
-                <br>
-
-                <div v-if="afficherTransport" class="mode_de_transport">
+                <div style="display: flex; flex-direction: row; justify-content: space-between; width: 400px ;">
                     <div>
-                        <button @click="trouverChemin('voiture')">Voiture</button>
+                        <label>
+                            <input type="radio" v-model="transportType" value="0"> Véhicule motorisé
+                        </label>
                     </div>
 
                     <div>
-                        <button @click="trouverChemin('moto')">Moto</button>
+                        <label>
+                            <input type="radio" v-model="transportType" value="1"> Piéton
+                        </label>
                     </div>
 
                     <div>
-                        <button @click="trouverChemin('velo')">Vélo</button>
+                        <label>
+                            <input type="radio" v-model="transportType" value="2"> Cycliste
+                        </label>
                     </div>
 
                     <div>
-                        <button @click="trouverChemin('pied')">À pied</button>
+                        <label>
+                            <input type="radio" v-model="transportType" value="3"> Véhicule sans permis
+                        </label>
                     </div>
                 </div>
             </div>
 
-           
-
+          
             <div>
                 <button @click="exporterCheminGpx"> Exporter Chemin Gpx </button> 
             </div>
@@ -86,14 +92,6 @@
                 <button @click="exporterCheminKml"> Exporter Chemin Kml </button> 
             </div>
            
-            <!-- temporaire
-                <div>
-                    <button id="bouton_importer">
-                        <label for="fichier">importerFichierCarte</label>
-                    </button>
-                    <input id ="fichier" type="file" @change ="chargerFichierCarte"/>
-                </div>
-            -->
 
             <label>
                 <span id="import">Importer</span>
@@ -104,7 +102,7 @@
 
         </div>
         
-        <div id="map"></div>
+        <div id="map" style=" margin: auto;"></div>
     </div>
 
     <br> <br> <br>

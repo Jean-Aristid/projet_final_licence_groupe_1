@@ -1,0 +1,8 @@
+input[type=file] {
+  display: none;
+}
+
+/* On créé un bouton en ciblant un élément dans la balise label */
+label span {
+  cursor: pointer;
+}
