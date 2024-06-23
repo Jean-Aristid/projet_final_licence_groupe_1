@@ -10,7 +10,7 @@ var app = new Vue({
         routeLayer: null,
         routeCoordinates: [],
         segments: [],
-        segmentCount: 1 // Nombre de segments souhaité
+        segmentCount: 1 // Nombre de segments minimum
     },
     mounted() {
         this.initialiserMap();
@@ -96,14 +96,14 @@ var app = new Vue({
             URL.revokeObjectURL(url);
         },
         trouverChemin() {
-            // pour départ
+            // Départ
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.startLocation}`)
                 .then(response => response.json())
                 .then(dataStart => {
                     if (dataStart && dataStart.length > 0) {
                         var startLat = dataStart[0].lat;
                         var startLon = dataStart[0].lon;
-                        // pour arrivée
+                        // Arrivée
                         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
                             .then(response => response.json())
                             .then(dataEnd => {
@@ -120,9 +120,8 @@ var app = new Vue({
                                                 if (this.routeLayer) {
                                                     this.map.removeLayer(this.routeLayer);
                                                 }
-                                                this.routeLayer = L.geoJSON(route).addTo(this.map);
+                                                this.routeLayer = L.layerGroup().addTo(this.map);
                                                 this.animerChemin(this.routeCoordinates);
-                                                this.decouperEnSegments();
                                             } else {
                                                 alert("Chemin non trouvé");
                                             }
@@ -140,38 +139,33 @@ var app = new Vue({
                 .catch(error => console.error('Erreur:', error));
         },
         animerChemin(coordinates) {
-            let index = 0;
-            const polyline = L.polyline([], { color: 'blue' }).addTo(this.map);
-            const addPoint = () => {
-                if (index < coordinates.length) {
-                    polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
-                    index++;
-                    setTimeout(addPoint, 100); // ajuster la vitesse ici
-                }
-            };
-            addPoint();
-        },
-        decouperEnSegments() {
             const segmentCount = this.segmentCount;
-            const segmentLength = Math.floor(this.routeCoordinates.length / segmentCount);
+            const segmentLength = Math.floor(coordinates.length / segmentCount);
             this.segments = [];
 
             for (let i = 0; i < segmentCount; i++) {
                 const start = i * segmentLength;
-                const end = (i === segmentCount - 1) ? this.routeCoordinates.length : (i + 1) * segmentLength;
-                this.segments.push(this.routeCoordinates.slice(start, end));
+                const end = (i === segmentCount - 1) ? coordinates.length : (i + 1) * segmentLength;
+                this.segments.push(coordinates.slice(start, end));
             }
 
-            this.afficherSegments();
-        },
-        afficherSegments() {
-            if (this.routeLayer) {
-                this.map.removeLayer(this.routeLayer);
-            }
-            this.routeLayer = L.layerGroup().addTo(this.map);
-            for (let i = 0; i < this.segments.length; i++) {
-                L.polyline(this.segments[i].map(coord => [coord[1], coord[0]]), { color: this.getSegmentColor(i) }).addTo(this.routeLayer);
-            }
+            let index = 0;
+            let currentSegment = 0;
+            let polyline = L.polyline([], { color: this.getSegmentColor(currentSegment) }).addTo(this.routeLayer);
+
+            const addPoint = () => {
+                if (index < this.segments[currentSegment].length) {
+                    polyline.addLatLng([this.segments[currentSegment][index][1], this.segments[currentSegment][index][0]]);
+                    index++;
+                    setTimeout(addPoint, 15); // ajuster la vitesse
+                } else if (currentSegment < this.segments.length - 1) {
+                    currentSegment++;
+                    index = 0;
+                    polyline = L.polyline([], { color: this.getSegmentColor(currentSegment) }).addTo(this.routeLayer);
+                    setTimeout(addPoint, 100);
+                }
+            };
+            addPoint();
         },
         getSegmentColor(index) {
             const colors = ['blue', 'green', 'red', 'purple', 'orange', 'yellow'];
