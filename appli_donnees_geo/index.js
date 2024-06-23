@@ -2,12 +2,19 @@ var app = new Vue({
     el: '#app',
     data: {
         location: '',
+        startLocation: '',
+        endLocation: '',
         currentLocation: { name: '', lat: '', lon: '' },
         map: null,
-        marker: null
+        marker: null,
+        routeLayer: null
     },
     mounted() {
         this.initialiserMap();
+        document.addEventListener('keydown', this.handleShortcut);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleShortcut);
     },
     methods: {
         initialiserMap() {
@@ -19,7 +26,7 @@ var app = new Vue({
 
             this.map.on('click', this.on_map_click);
         },
-        chercher(){
+        chercher() {
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.location}`)
                 .then(response => response.json())
                 .then(data => {
@@ -32,7 +39,10 @@ var app = new Vue({
                             this.map.removeLayer(this.marker);
                         }
                         this.marker = L.marker([lat, lon]).addTo(this.map)
-                            .bindPopup('<b>' + name + '</b>')
+                            .bindPopup('<b>' + name + '</b>'
+                            + '<br>' + '<b> latitude : ' + lat + '</b>'
+                            + '<br>' + '<b> longitude : ' + lon + '</b>'
+                            )
                             .openPopup();
                         this.currentLocation = { name: name, lat: lat, lon: lon };
                     } else {
@@ -51,6 +61,13 @@ var app = new Vue({
                 .bindPopup('<b>Coordonnées :</b><br>Latitude: ' + lat + '<br>Longitude: ' + lon)
                 .openPopup();
             this.currentLocation = { name: 'Coordonnées cliquées', lat: lat, lon: lon };
+        },
+        handleShortcut(event) {
+            if (event.ctrlKey && event.key === 'a') {
+                event.preventDefault();
+                this.$refs.locationInput.focus();
+
+            }
         },
         imprimer() {
             if (this.currentLocation.name === '' && this.currentLocation.lat === '' && this.currentLocation.lon === '') {
@@ -88,15 +105,65 @@ var app = new Vue({
                 }).addTo(this.map);
             };
             reader.readAsText(file);
+        trouverChemin() {
+            //pour départ
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.startLocation}`)
+                .then(response => response.json())
+                .then(dataStart => {
+                    if (dataStart && dataStart.length > 0) {
+                        var startLat = dataStart[0].lat;
+                        var startLon = dataStart[0].lon;
+                        // pour arrivée
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${this.endLocation}`)
+                            .then(response => response.json())
+                            .then(dataEnd => {
+                                if (dataEnd && dataEnd.length > 0) {
+                                    var endLat = dataEnd[0].lat;
+                                    var endLon = dataEnd[0].lon;
+                                    // Requête chemins
+                                    fetch(`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
+                                        .then(response => response.json())
+                                        .then(routeData => {
+                                            if (routeData && routeData.routes && routeData.routes.length > 0) {
+                                                var route = routeData.routes[0].geometry;
+                                                if (this.routeLayer) {
+                                                    this.map.removeLayer(this.routeLayer);
+                                                }
+                                                this.routeLayer = L.geoJSON(route).addTo(this.map);
+                                                this.animerChemin(route.coordinates);
+                                            } else {
+                                                alert("Chemin non trouvé");
+                                            }
+                                        });
+                                } else {
+                                    alert("Lieu d'arrivée non trouvé");
+                                }
+                            });
+                    } else {
+                        alert("Lieu de départ non trouvé");
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        },
+        animerChemin(coordinates) {
+            let index = 0;
+            const polyline = L.polyline([], { color: 'blue' }).addTo(this.map);
+            const addPoint = () => {
+                if (index < coordinates.length) {
+                    polyline.addLatLng([coordinates[index][1], coordinates[index][0]]);
+                    index++;
+                    setTimeout(addPoint, 100); // vitesse
+                }
+            };
+            addPoint();
         }
     }
 });
 
 window.addEventListener("load", () => {
 	let a = document.getElementById("location-input");
-	let b = document.getElementById("import");
 	let c = document.getElementById("fichier");
-	
+
 	a.addEventListener("keydown", (e) => {
 		if(e.key === "Enter")
 		{
@@ -108,3 +175,5 @@ window.addEventListener("load", () => {
 		app.chargerGPX(e);
 	});
 })
+
+
