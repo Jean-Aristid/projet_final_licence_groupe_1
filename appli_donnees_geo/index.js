@@ -95,6 +95,7 @@ var app = new Vue({
 window.addEventListener("load", () => {
 	let a = document.getElementById("location-input");
 	let b = document.getElementById("import");
+	let c = document.getElementById("fichier");
 	
 	a.addEventListener("keydown", (e) => {
 		if(e.key === "Enter")
@@ -102,7 +103,8 @@ window.addEventListener("load", () => {
 			app.chercher();
 		}
 	});
-	b.addEventListener("click", (e) => {
+	
+	c.addEventListener("click", (e) => {
 		app.chargerGPX(e);
 	});
 })
