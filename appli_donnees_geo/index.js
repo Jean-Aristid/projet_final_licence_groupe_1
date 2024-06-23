@@ -69,23 +69,26 @@ var app = new Vue({
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         },
-        lecture() {
-		let file = document.getElementById("fichier");
-		//let lect = new FileReader();
-		file.addEventListener("change", () => {
-			let lect = new FileReader();
-			lect.onload = function () {
-				alert("contenu du fichier " + file.files[0] + ":\n\n" + lect.result);
-			}
-			lect.readAsText(file.files[0]);
-			console.log(lect);
-			
-		});
-		/*if(file) {
-			lect.readAsText(file);
-		}*/
-		//console.log(lect);
-	}
+        chargerGPX(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const gpxData = e.target.result;
+                if (this.routeLayer) {
+                    this.map.removeLayer(this.routeLayer);
+                }
+                this.routeLayer = new L.GPX(gpxData, {
+                    async: true
+                }).on('loaded', (e) => {
+                    this.map.fitBounds(e.target.getBounds());
+                }).addTo(this.map);
+            };
+            reader.readAsText(file);
+        }
     }
 });
 
@@ -99,7 +102,7 @@ window.addEventListener("load", () => {
 			app.chercher();
 		}
 	});
-	b.addEventListener("click", () => {
-		app.lecture();
+	b.addEventListener("click", (e) => {
+		app.chargerGPX(e);
 	});
 })
