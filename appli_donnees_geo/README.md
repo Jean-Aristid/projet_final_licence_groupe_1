@@ -1,6 +1,6 @@
 # Projet Final Licence Groupe 1
 
-Ninah s'est chargé de faire le code pour pouvoir afficher un lieu sous forme de pop up et le télécharger
+On s'est chargé de faire le code pour pouvoir afficher un lieu sous forme de pop up et le télécharger
 à l'aide de HTML , LEAFLETJS , CSS et JAVASCRIPT
 
 Donogbo s'est chargé de réadapter de readapter le code en utilisant VUEJS.
