@@ -1,5 +1,3 @@
-
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -9,9 +7,9 @@ body {
 
 
 #depart_arrivee{
-	display: flex ;
-	flex-direction: column ;
-	margin-left : 5px ;
+    display: flex ;
+    flex-direction: column ;
+    margin-left : 5px ;
     text-align: center;
 } 
 
@@ -75,4 +73,3 @@ button:hover {
    /* text-align: right;*/
     cursor: pointer; /* Curseur de la souris en pointeur */
 }
-
