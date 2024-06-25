@@ -5,108 +5,58 @@
     <title>Carte avec Leaflet et Vue.js</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js"></script>
-    <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
-    <link rel="stylesheet" href="index.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/gpx.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-    <style>
-        #map {
-            height: 600px;
-            width: 80%;
-        }
-        #controls {
-            width: 100px;
-        }
-
-
-    </style>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
     <div id="app">
-
-        <h1>Carte avec OpenStreetMap et Vue.js</h1>
-
+        
         <div id="controls">
-            <div>
-                <input type="text" id="location-input" v-model="location" ref="locationInput" placeholder="Entrez un lieu" />
+            <div class="inputs-container">
+                <input ref="startLocation" v-model="startLocation" placeholder="Départ" @input="fetchSuggestions('start')" @change="zoomToLocation('start')" list="startSuggestions" />
+                <datalist id="startSuggestions">
+                    <option v-for="suggestion in startSuggestions" :key="suggestion.place_id" :value="suggestion.display_name"></option>
+                </datalist>
+
+                <input ref="endLocation" v-model="endLocation" placeholder="Arrivée" @input="fetchSuggestions('end')" @change="zoomToLocation('end')" list="endSuggestions" />
+                <datalist id="endSuggestions">
+                    <option v-for="suggestion in endSuggestions" :key="suggestion.place_id" :value="suggestion.display_name"></option>
+                </datalist>
             </div>
 
-            <div>
-                <button @click="chercher" >Chercher</button>
+            <div class="transport-options">
+                <div class="transport-option" @click="selectTransportType(0)" :class="{ 'selected': transportType === 0 }">
+                    <img src="images/voiture.png" alt="Véhicule motorisé">
+                </div>
+                <div class="transport-option" @click="selectTransportType(1)" :class="{ 'selected': transportType === 1 }">
+                    <img src="images/marche.png" alt="Piéton">
+                </div>
+                <div class="transport-option" @click="selectTransportType(2)" :class="{ 'selected': transportType === 2 }">
+                    <img src="images/velo.png" alt="Cycliste">
+                </div>
+                <div class="transport-option" @click="selectTransportType(3)" :class="{ 'selected': transportType === 3 }">
+                    <img src="images/petite-voiture.png" alt="Véhicule sans permis">
+                </div>
             </div>
 
-            <div>
+            <div class="action-buttons">
+                <button @click="trouverChemin">Chercher</button>
                 <button @click="imprimer">Imprimer</button>
             </div>
-
-            <div id="depart_arrivee">
-                <div id="depart">
-                    <input type="text" v-model="startLocation" style="height: 30px; width: 300px;" placeholder="Départ"/>
-                </div>
-
-                <div id="arrivee">
-                    <input type="text" v-model="endLocation" style="height: 30px;  width: 300px;" placeholder="Arrivée"/>
-                </div>
+            <div class="file-input">
+                <label for="file-input" class="file-input-label">
+                    <img src="images/importer.png" alt="Icone fichier">
+                </label>
+                <input id="file-input" type="file" @change="chargerGPX($event)" multiple accept=".gpx">
             </div>
-
-            
-            <div>
-                <div>
-                    <button @click="trouverChemin">Trouver Chemin</button>
-                </div>
-
-                <div style="display: flex; flex-direction: row; justify-content: space-between; width: 400px ;">
-                    <div>
-                        <label>
-                            <input type="radio" v-model="transportType" value="0"> Véhicule motorisé
-                        </label>
-                    </div>
-
-                    <div>
-                        <label>
-                            <input type="radio" v-model="transportType" value="1"> Piéton
-                        </label>
-                    </div>
-
-                    <div>
-                        <label>
-                            <input type="radio" v-model="transportType" value="2"> Cycliste
-                        </label>
-                    </div>
-
-                    <div>
-                        <label>
-                            <input type="radio" v-model="transportType" value="3"> Véhicule sans permis
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-          
-            <div>
-                <button @click="exporterCheminGpx"> Exporter Chemin Gpx </button> 
-            </div>
-
-            <div>
-                <button @click="exporterCheminKml"> Exporter Chemin Kml </button> 
-            </div>
-           
-
-            <label>
-                <span id="import">Importer</span>
-                <input type="file" id="fichier" name="fichier" accept=".gpx, .kml"/>
-            </label>
-
 
 
         </div>
         
-        <div id="map" style=" margin: auto;"></div>
+        <div id="map"></div>
     </div>
 
-    <br> <br> <br>
     <script src="index.js"></script>
 </body>
 </html>
-
