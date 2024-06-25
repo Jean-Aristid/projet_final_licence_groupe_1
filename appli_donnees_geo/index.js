@@ -10,7 +10,8 @@ var app = new Vue({
         map: null,
         marker: null,
         routeLayers: [], // Tableau pour stocker les différentes couches de chemin
-        waypoints: []
+        waypoints: [],
+        gpxData: null // Variable pour stocker les données GPX récupérées
     },
     mounted() {
         this.initialiserMap();
@@ -140,6 +141,7 @@ var app = new Vue({
                                             return response.blob();
                                         })
                                         .then(blob => {
+                                            this.gpxData = blob; // Stocker le fichier GPX récupéré
                                             const url = URL.createObjectURL(blob);
                                             const routeLayer = new L.GPX(url, {
                                                 async: true
@@ -207,6 +209,103 @@ var app = new Vue({
                 event.preventDefault();
                 this.$refs.startLocation.focus();
             }
+        },
+        exporterCheminGpx() {
+            if (!this.gpxData) {
+                alert('Aucun chemin disponible à exporter.');
+                return;
+            }
+
+            const fileName = prompt('Entrez le nom du fichier GPX:');
+            if (!fileName) {
+                alert('Nom de fichier invalide.');
+                return;
+            }
+
+            const url = URL.createObjectURL(this.gpxData);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.gpx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
+        exporterCheminKml() {
+            // Vérifier si des données GPX sont disponibles
+            if (!this.gpxData) {
+                alert('Aucun chemin disponible à exporter.');
+                return;
+            }
+        
+            // Demander à l'utilisateur de saisir le nom du fichier
+            const fileName = prompt('Entrez le nom du fichier KML:');
+            if (!fileName) {
+                alert('Nom de fichier invalide.');
+                return;
+            }
+        
+            // Convertir les données GPX en KML
+            const gpxText = this.gpxData.text();
+            const parser = new DOMParser();
+            const gpxDoc = parser.parseFromString(gpxText, 'application/xml');
+        
+            // Créer le document KML
+            const kmlDoc = document.implementation.createDocument('', '', null);
+            const kmlElement = kmlDoc.createElement('kml');
+            kmlElement.setAttribute('xmlns', 'http://www.opengis.net/kml/2.2');
+        
+            const documentElement = kmlDoc.createElement('Document');
+            kmlElement.appendChild(documentElement);
+            kmlDoc.appendChild(kmlElement);
+        
+            const nameElement = kmlDoc.createElement('name');
+            nameElement.textContent = fileName;
+            documentElement.appendChild(nameElement);
+        
+            const placemarkElement = kmlDoc.createElement('Placemark');
+            documentElement.appendChild(placemarkElement);
+        
+            const lineStringElement = kmlDoc.createElement('LineString');
+            placemarkElement.appendChild(lineStringElement);
+        
+            const coordinatesElement = kmlDoc.createElement('coordinates');
+            lineStringElement.appendChild(coordinatesElement);
+        
+            // Extraire les coordonnées du GPX et les ajouter au KML
+            const trkpts = gpxDoc.getElementsByTagName('trkpt');
+            let coordinates = '';
+            for (let i = 0; i < trkpts.length; i++) {
+                const lat = trkpts[i].getAttribute('lat');
+                const lon = trkpts[i].getAttribute('lon');
+                coordinates += `${lon},${lat},0 `;
+            }
+            coordinatesElement.textContent = coordinates.trim();
+        
+            // Créer une URL Blob pour le fichier KML
+            const serializer = new XMLSerializer();
+            const kmlString = serializer.serializeToString(kmlDoc);
+            const kmlBlob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
+            const kmlUrl = URL.createObjectURL(kmlBlob);
+        
+            // Créer un lien de téléchargement pour exporter le fichier KML
+            try {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = kmlUrl;
+                downloadLink.download = `${fileName}.kml`;
+        
+                // Ajouter le lien au document, simuler un clic, puis le retirer
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+        
+                // Révoquer l'URL pour libérer les ressources
+                URL.revokeObjectURL(kmlUrl);
+            } catch (error) {
+                console.error('Erreur lors de l\'exportation du fichier KML:', error);
+                alert('Une erreur est survenue lors de l\'exportation du fichier KML.');
+            }
         }
+        
     }
 });
