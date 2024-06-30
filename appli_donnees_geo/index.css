@@ -1,66 +1,139 @@
-body {
-	font-family: Arial, sans-serif;
-	margin: 0;
-	padding: 0;
-	background-color: #f4f4f4;
+/* Réinitialisation et styles de base */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
 }
 
-h1 {
-	text-align: center;
-	color: #333;
-	margin: 20px 0;
+
+/* Conteneur principal de l'application */
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
+/* Conteneur pour les contrôles */
 #controls {
-	text-align: center;
-	margin: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    background-color: #f2f2f2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    position: relative;
 }
 
-#location-input {
-	width: 300px;
-	padding: 10px;
-	font-size: 16px;
+/* Conteneur pour les champs de saisie */
+.inputs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
-
-button {
-	padding: 10px 20px;
-	font-size: 16px;
-	cursor: pointer;
-	background-color: #007bff;
-	color: white;
-	border: none;
-	border-radius: 5px;
-	margin-left: 10px;
+/* Styles des champs de saisie */
+.inputs-container input {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 200px;
 }
 
-button:hover {
-	background-color: #0056b3;
+/* Conteneur pour les options de transport */
+.transport-options {
+    display: flex;
+    gap: 10px;
 }
 
+/* Styles des options de transport */
+.transport-option {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.transport-option img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.transport-option.selected {
+    background-color: #007BFF;
+}
+
+/* Conteneur pour les boutons d'action */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Styles des boutons d'action */
+.action-buttons button {
+    padding: 8px 16px; /* Ajustement de la taille des boutons */
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.action-buttons button:last-child {
+    margin-right: 0;
+}
+
+.action-buttons button:hover {
+    background-color: #0056b3;
+}
+
+/* Style du bouton "Choisir un fichier" */
+.file-input {
+    margin-top: 10px;
+    position: relative;
+}
+
+.file-input input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-input-label {
+    display: inline-block;
+    width: 40px; /* Ajustez la taille du bouton */
+    height: 40px; /* Ajustez la taille du bouton */
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 50%; /* Pour rendre le bouton circulaire */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.file-input-label img {
+    width: 24px; /* Ajustez la taille de l'icône */
+    height: 24px; /* Ajustez la taille de l'icône */
+}
+
+.file-input-label:hover {
+    background-color: #0056b3;
+}
+
+/* Style de la carte */
 #map {
-	height: 600px;
-	width: 80%;
-	margin: 0 auto;
-	border: 2px solid #ccc;
-	border-radius: 10px;
+    flex: 1; /* Pour remplir l'espace restant */
+    height: 100%; /* Assurez-vous que la carte a une hauteur */
+    width: 100%; /* Assurez-vous que la carte a une largeur */
 }
 
-#fichier {
-	display : none;
-}
-
-#import {
-	padding: 10px 20px;
-	font-size: 16px;
-	cursor: pointer;
-	background-color: #007bff;
-	color: white;
-	border: none;
-	border-radius: 5px;
-	margin-left: 10px;
-}
-
-#import:hover {
-	background-color: #0056b3;
-}
