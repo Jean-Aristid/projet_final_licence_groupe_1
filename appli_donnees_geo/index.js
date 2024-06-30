@@ -210,6 +210,14 @@ var app = new Vue({
                 this.$refs.startLocation.focus();
             }
         },
+
+        /**
+         * 
+         * je veux que tu écrives améliore la fonction exporterCheminGpx de sorte à ce que 
+         * quand je clique sur le bouton, un liste déroulante apparaisse dans le html avec les noms des chemins correspondant 
+         * aux itinéraires déssinés sur la carte. et quand, j'aurai choisi le chemin par l'ensembles des chemins qui sera donné, 
+         * je veux avoir le fichier gpx correspondant téléchargé.
+         */
         exporterCheminGpx() {
             if (!this.gpxData) {
                 alert('Aucun chemin disponible à exporter.');
@@ -232,80 +240,133 @@ var app = new Vue({
             URL.revokeObjectURL(url);
         },
         exporterCheminKml() {
-            // Vérifier si des données GPX sont disponibles
-            if (!this.gpxData) {
+            if (!this.gpxData || this.gpxData.length === 0) {
                 alert('Aucun chemin disponible à exporter.');
                 return;
             }
         
-            // Demander à l'utilisateur de saisir le nom du fichier
             const fileName = prompt('Entrez le nom du fichier KML:');
             if (!fileName) {
                 alert('Nom de fichier invalide.');
                 return;
             }
         
-            // Convertir les données GPX en KML
-            const gpxText = this.gpxData.text();
-            const parser = new DOMParser();
-            const gpxDoc = parser.parseFromString(gpxText, 'application/xml');
+            // Créer le contenu du fichier KML avec une syntaxe correcte et indentée
+            const kmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+        <kml xmlns="http://www.opengis.net/kml/2.2">
+          <Document>
+            <name>${fileName}</name>
+            <Placemark>
+              <name>${fileName}</name>
+              <LineString>
+                <coordinates>
+                  ${this.gpxData.map(point => `${point.lon},${point.lat},${point.ele}`).join(' ')}
+                </coordinates>
+              </LineString>
+            </Placemark>
+          </Document>
+        </kml>`;
         
-            // Créer le document KML
-            const kmlDoc = document.implementation.createDocument('', '', null);
-            const kmlElement = kmlDoc.createElement('kml');
-            kmlElement.setAttribute('xmlns', 'http://www.opengis.net/kml/2.2');
+            // Créer un objet Blob à partir du contenu KML
+            const blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
         
-            const documentElement = kmlDoc.createElement('Document');
-            kmlElement.appendChild(documentElement);
-            kmlDoc.appendChild(kmlElement);
-        
-            const nameElement = kmlDoc.createElement('name');
-            nameElement.textContent = fileName;
-            documentElement.appendChild(nameElement);
-        
-            const placemarkElement = kmlDoc.createElement('Placemark');
-            documentElement.appendChild(placemarkElement);
-        
-            const lineStringElement = kmlDoc.createElement('LineString');
-            placemarkElement.appendChild(lineStringElement);
-        
-            const coordinatesElement = kmlDoc.createElement('coordinates');
-            lineStringElement.appendChild(coordinatesElement);
-        
-            // Extraire les coordonnées du GPX et les ajouter au KML
-            const trkpts = gpxDoc.getElementsByTagName('trkpt');
-            let coordinates = '';
-            for (let i = 0; i < trkpts.length; i++) {
-                const lat = trkpts[i].getAttribute('lat');
-                const lon = trkpts[i].getAttribute('lon');
-                coordinates += `${lon},${lat},0 `;
-            }
-            coordinatesElement.textContent = coordinates.trim();
-        
-            // Créer une URL Blob pour le fichier KML
-            const serializer = new XMLSerializer();
-            const kmlString = serializer.serializeToString(kmlDoc);
-            const kmlBlob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
-            const kmlUrl = URL.createObjectURL(kmlBlob);
+            // Créer une URL pour le Blob
+            const kmlUrl = URL.createObjectURL(blob);
         
             // Créer un lien de téléchargement pour exporter le fichier KML
-            try {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = kmlUrl;
+            downloadLink.download = `${fileName}.kml`;
+        
+            // Ajouter le lien au document, simuler un clic, puis le retirer
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        
+            // Révoquer l'URL pour libérer les ressources
+            URL.revokeObjectURL(kmlUrl);
+        },
+
+
+        /**
+         * revoir cette fonction.
+         */
+        convertirGpxEnKml(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
+                alert('Aucun fichier sélectionné.');
+                return;
+            }
+        
+            const file = files[0];
+            const reader = new FileReader();
+        
+            reader.onload = (e) => {
+                const gpxContent = e.target.result;
+        
+                // Parse the GPX content
+                const parser = new DOMParser();
+                const gpxDoc = parser.parseFromString(gpxContent, 'application/xml');
+                const trkpts = gpxDoc.getElementsByTagName('trkpt');
+        
+                if (trkpts.length === 0) {
+                    alert('Aucun point de chemin trouvé dans le fichier GPX.');
+                    return;
+                }
+        
+                // Convert to KML content
+                const kmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+        <kml xmlns="http://www.opengis.net/kml/2.2">
+          <Document>
+            <name>${file.name.replace('.gpx', '')}</name>
+            <Placemark>
+              <name>${file.name.replace('.gpx', '')}</name>
+              <LineString>
+                <coordinates>
+                  ${Array.from(trkpts).map(trkpt => {
+                      const lat = trkpt.getAttribute('lat');
+                      const lon = trkpt.getAttribute('lon');
+                      return `${lon},${lat}`;
+                  }).join(' ')}
+                </coordinates>
+              </LineString>
+            </Placemark>
+          </Document>
+        </kml>`;
+        
+                // Create a Blob from the KML content
+                const blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
+        
+                // Prompt user for file name
+                const fileName = prompt('Entrez le nom du fichier KML:');
+                if (!fileName) {
+                    alert('Nom de fichier invalide.');
+                    return;
+                }
+        
+                // Create a download link
+                const kmlUrl = URL.createObjectURL(blob);
                 const downloadLink = document.createElement('a');
                 downloadLink.href = kmlUrl;
                 downloadLink.download = `${fileName}.kml`;
         
-                // Ajouter le lien au document, simuler un clic, puis le retirer
+                // Simulate a click to download the file
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
         
-                // Révoquer l'URL pour libérer les ressources
+                // Revoke the object URL
                 URL.revokeObjectURL(kmlUrl);
-            } catch (error) {
-                console.error('Erreur lors de l\'exportation du fichier KML:', error);
-                alert('Une erreur est survenue lors de l\'exportation du fichier KML.');
-            }
+            };
+        
+            // Read the GPX file as text
+            reader.readAsText(file);
         }
+        
+        // Usage in HTML
+        // <input type="file" accept=".gpx" onchange="convertirGpxEnKml(event)" />
+        
+                
         
     }
 });

@@ -19,6 +19,9 @@
                     <option v-for="suggestion in startSuggestions" :key="suggestion.place_id" :value="suggestion.display_name"></option>
                 </datalist>
 
+
+                
+
                 <input ref="endLocation" v-model="endLocation" placeholder="Arrivée" @input="fetchSuggestions('end')" @change="zoomToLocation('end')" list="endSuggestions" />
                 <datalist id="endSuggestions">
                     <option v-for="suggestion in endSuggestions" :key="suggestion.place_id" :value="suggestion.display_name"></option>
@@ -51,6 +54,13 @@
                     <img src="images/importer.png" alt="Icone fichier">
                 </label>
                 <input id="file-input" type="file" @change="chargerGPX($event)" multiple accept=".gpx">
+            </div>
+
+            <div class="file-input">
+                <label for="file-convert" class="file-input-label">
+                    <img src="images/conversion.jpeg" alt="Icone Fichier">
+                </label>
+                <input id="file-convert" type="file" accept=".gpx" onchange="convertirGpxEnKml(event)" />
             </div>
 
 
