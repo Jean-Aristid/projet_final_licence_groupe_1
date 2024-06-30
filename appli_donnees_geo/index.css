@@ -1,75 +1,147 @@
-body {
-    font-family: Arial, sans-serif;
+/* Réinitialisation et styles de base */
+body, html {
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    height: 100%;
+    font-family: Arial, sans-serif;
 }
 
-
-#depart_arrivee{
-    display: flex ;
-    flex-direction: column ;
-    margin-left : 5px ;
-    text-align: center;
-} 
-
-h1 {
-    text-align: center;
-    color: #333;
-    margin: 20px 0;
+/* Conteneur principal de l'application */
+#app {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrer verticalement les éléments */
+    align-items: center; /* Centrer horizontalement les éléments */
+    height: 100%;
 }
 
+/* Conteneur pour les contrôles */
 #controls {
-    text-align: center;
-    margin: 40px;
-}
-
-#location-input {
-    width: 300px;
+    display: flex;
+    flex-wrap: wrap;
     padding: 10px;
-    font-size: 16px;
+    background-color: #f2f2f2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    position: relative;
+    justify-content: center; /* Centrer les éléments horizontalement */
+    align-items: center; /* Centrer les éléments verticalement */
+    max-width: 800px; /* Ajustement pour limiter la largeur des contrôles */
+    width: 100%; /* Assurer que les contrôles occupent toute la largeur disponible */
 }
 
+/* Conteneur pour les champs de saisie */
+.inputs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
 
-button {
-    padding: 10px 20px;
-    font-size: 16px;
+/* Styles des champs de saisie */
+.inputs-container input {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 200px;
+}
+
+/* Conteneur pour les options de transport */
+.transport-options {
+    display: flex;
+    gap: 10px;
+}
+
+/* Styles des options de transport */
+.transport-option {
     cursor: pointer;
-    background-color: #007bff;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    background-color: #e9e9e9;
+}
+
+.transport-option.selected {
+    background-color: #007BFF;
+    color: white;
+}
+
+.transport-option i {
+    font-size: 24px;
+}
+
+/* Conteneur pour les boutons d'action */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Styles des boutons d'action */
+.action-buttons button {
+    padding: 10px 20px;
+    background-color: #007BFF;
     color: white;
     border: none;
-    border-radius: 5px;
-    margin-left: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-button:hover {
+.action-buttons button i {
+    font-size: 16px;
+}
+
+.action-buttons button:hover {
     background-color: #0056b3;
 }
 
+/* Style du bouton "Choisir un fichier" */
+.file-input {
+    margin-top: 10px;
+    position: relative;
+    display: flex; /* Ajouté pour aligner le style avec action-buttons */
+    gap: 10px; /* Ajouté pour aligner le style avec action-buttons */
+}
+
+.file-input-label {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.file-input-label i {
+    font-size: 20px;
+}
+
+.file-input-label:hover {
+    background-color: #0056b3;
+}
+
+.file-input input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Style de la carte */
 #map {
-    height: 600px;
-    width: 80%;
-    margin: 0 auto;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-}
-
-.fa-search {
-    
-    color:blue;
-    cursor: pointer; /* Curseur de la souris en pointeur */
-}
-
-
-.fa-shoe-prints {
-    font-size: 17px;
-    color: blue;
-    cursor: pointer; /* Curseur de la souris en pointeur */
-}
-
-.fa-print{
-    font-size: 17px;
-    color: blue;
-   /* text-align: right;*/
-    cursor: pointer; /* Curseur de la souris en pointeur */
+    flex: 1;
+    height: 100%;
+    width: 100%;
 }
