@@ -1,5 +1,7 @@
 # Projet Final Licence Groupe 1
 
+Ce projet utilise Leaflet et Vue.js pour afficher une carte interactive permettant de tracer des itinéraires.
+
 ## Installation
 1 - Clonez le dépôt : 
 https://gitlab.sorbonne-paris-nord.fr/12014142/projet_final_licence_groupe_1.git
