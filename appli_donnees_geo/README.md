@@ -16,7 +16,7 @@ Suivre instructions
 
 3 - Installer les extensions CORS pour éviter les blocages :
 - Moesif Origin & CORS Changer pour Chrome
-- CORS Unblock pour Firefox
+- CORS Unblock pour Firefox et Edge 
 
 ## Utilisation
 - Lancez le serveur :

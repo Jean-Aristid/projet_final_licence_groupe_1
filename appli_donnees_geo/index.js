@@ -14,7 +14,7 @@ var app = new Vue({
         routeLayers: [], // Tableau pour stocker les chemins ajoutés
         waypoints: [],
         generateRouteActive: false, // Nouvelle propriété pour gérer l'activation/désactivation de la génération de route
-        fileWaypoints: [] // Nouveau tableau pour stocker les points de départ et d'arrivée des fichiers GPX
+        fileWaypoints: [], // Nouveau tableau pour stocker les points de départ et d'arrivée des fichiers GPX
     },
     mounted() {
         this.initialiserMap();
@@ -79,51 +79,144 @@ var app = new Vue({
                 })
                 .catch(error => console.error('Erreur lors de la récupération de l\'adresse:', error));
         },
-        imprimer() {
+        imprimerGPX() {
             if (this.routeLayers.length === 0) {
                 alert('Aucun chemin disponible pour exporter.');
                 return;
             }
 
-            this.exporterChemins();
+            this.exporterCheminsGPX();
         },
-        exporterChemins() {
+        imprimerKML() {
+            if (this.routeLayers.length === 0) {
+                alert('Aucun chemin disponible pour exporter.');
+                return;
+            }
+
+            this.exporterCheminsKML();
+        },
+        exporterCheminsGPX() {
             const selectedLayers = this.routeLayers.filter(layer => layer.selected);
             if (selectedLayers.length === 0) {
                 alert('Aucun chemin sélectionné pour exporter.');
                 return;
             }
-
-            selectedLayers.forEach((layer, index) => {
-                this.exportGPX(layer, index);
+        
+            selectedLayers.forEach((layer) => {
+                this.exportGPX(layer);
             });
+        },        
+        exporterCheminsKML() {
+            const selectedLayers = this.routeLayers.filter(layer => layer.selected);
+            if (selectedLayers.length === 0) {
+                alert('Aucun chemin sélectionné pour exporter.');
+                return;
+            }
+        
+            selectedLayers.forEach((layer) => {
+                this.exportKML(layer);
+            });
+        },        
+
+        exportGPX(layer) {
+            const gpxData = layer.gpxData;
+            const startPoint = layer.startPoint; // Coordonnées du point de départ
+            const endPoint = layer.endPoint; // Coordonnées du point d'arrivée
+        
+            if (layer.selected && gpxData && startPoint && endPoint) {
+                fetch(gpxData)
+                    .then(response => response.text())
+                    .then(data => {
+                        // Ajouter les coordonnées du point de départ (startPoint)
+                        data = data.replace('<trkseg>', `<trkseg><trkpt lat="${startPoint.lat}" lon="${startPoint.lon}">`);
+                        
+                        // Ajouter les coordonnées du point d'arrivée (endPoint) à la fin
+                        const lastIndex = data.lastIndexOf('</trkpt>');
+                        data = data.substring(0, lastIndex) + `<trkpt lat="${endPoint.lat}" lon="${endPoint.lon}"></trkpt>` + data.substring(lastIndex);
+        
+                        const blob = new Blob([data], { type: 'application/gpx+xml' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `trajet_${layer.startLocation.replace(/ /g, "_")}_${layer.endLocation.replace(/ /g, "_")}.gpx`; // Utilisation du nom de chemin fourni
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    })
+                    .catch(error => console.error('Erreur lors de la récupération des données GPX:', error));
+            } else {
+                console.error('Erreur: Les données GPX ne sont pas disponibles pour ce chemin ou il n\'est pas sélectionné.');
+            }
         },
-
-        exportGPX(layer, index) {
-    // Utiliser l'URL du fichier GPX au lieu de tenter de convertir les coordonnées
-    const gpxData = layer.gpxData; // Assurez-vous que vous avez stocké les données GPX dans layer.gpxData
-    if (gpxData) {
-        fetch(gpxData)
-            .then(response => response.text())
-            .then(data => {
-                console.log('Contenu GPX:', data); // Ajoutez ce log pour vérifier le contenu GPX
-                const blob = new Blob([data], { type: 'application/gpx+xml' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `chemin_${index + 1}.gpx`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            })
-            .catch(error => console.error('Erreur lors de la récupération des données GPX:', error));
-    } else {
-        console.error('Erreur: Les données GPX ne sont pas disponibles pour ce chemin.');
-    }
-},
-
-
+        
+        exportKML(layer) {
+            const gpxData = layer.gpxData;
+            const startPoint = layer.startPoint; // Coordonnées du point de départ
+            const endPoint = layer.endPoint; // Coordonnées du point d'arrivée
+        
+            if (layer.selected && gpxData && startPoint && endPoint) {
+                fetch(gpxData)
+                    .then(response => response.text())
+                    .then(data => {
+                        // Convertir les données GPX en KML
+                        const kmlData = this.convertGPXtoKML(data, startPoint, endPoint);
+        
+                        const blob = new Blob([kmlData], { type: 'application/vnd.google-earth.kml+xml' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `trajet_${layer.startLocation.replace(/ /g, "_")}_${layer.endLocation.replace(/ /g, "_")}.kml`; // Utilisation du nom de chemin fourni
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    })
+                    .catch(error => console.error('Erreur lors de la récupération des données GPX:', error));
+            } else {
+                console.error('Erreur: Les données GPX ne sont pas disponibles pour ce chemin ou il n\'est pas sélectionné.');
+            }
+        },
+        convertGPXtoKML(gpxData, startPoint, endPoint) {
+            // Fonction pour convertir les données GPX en KML
+            const parser = new DOMParser();
+            const gpxDoc = parser.parseFromString(gpxData, "application/xml");
+            const trackPoints = gpxDoc.querySelectorAll('trkpt');
+        
+            let kml = `<?xml version="1.0" encoding="UTF-8"?>
+            <kml xmlns="http://www.opengis.net/kml/2.2">
+            <Document>
+                <name>Route</name>
+                <description>Route exportée depuis GPX</description>
+                <Style id="lineStyle">
+                    <LineStyle>
+                        <color>ff0000ff</color>
+                        <width>4</width>
+                    </LineStyle>
+                </Style>
+                <Placemark>
+                    <name>Route</name>
+                    <description>Route exportée depuis GPX</description>
+                    <styleUrl>#lineStyle</styleUrl>
+                    <LineString>
+                        <coordinates>
+                            ${startPoint.lon},${startPoint.lat},0\n`;
+        
+            trackPoints.forEach(point => {
+                const lat = point.getAttribute('lat');
+                const lon = point.getAttribute('lon');
+                kml += `\t\t\t${lon},${lat},0\n`;
+            });
+        
+            kml += `\t\t\t${endPoint.lon},${endPoint.lat},0\n`;
+            kml += `</coordinates>
+                    </LineString>
+                </Placemark>
+            </Document>
+            </kml>`;
+        
+            return kml;
+        },    
         fetchSuggestions(type) {
             let query = type === 'start' ? this.startLocation : this.endLocation;
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
@@ -190,6 +283,12 @@ var app = new Vue({
                                                 this.map.fitBounds(e.target.getBounds());
                                                 URL.revokeObjectURL(url);
                                             }).addTo(this.map);
+
+                                            // Stocker les coordonnées du point de départ et du point d'arrivée dans la couche de route
+                                            routeLayer.startPoint = { lat: startLat, lon: startLon };
+                                            routeLayer.endPoint = { lat: endLat, lon: endLon };
+                                            routeLayer.startLocation = this.startLocation;
+                                            routeLayer.endLocation = this.endLocation;
                                             routeLayer.selected = false; // Initialement non sélectionné
                                             routeLayer.gpxData = URL.createObjectURL(blob); // Stocker l'URL du fichier GPX pour l'exportation
                                             this.routeLayers.push(routeLayer);
@@ -224,10 +323,10 @@ var app = new Vue({
             if (!files) {
                 return;
             }
-
+        
             let allWaypoints = [];
             let fileWaypoints = [];
-
+        
             Array.from(files).forEach((file, fileIndex) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -235,18 +334,20 @@ var app = new Vue({
                     const parser = new DOMParser();
                     const gpxDoc = parser.parseFromString(gpxData, "application/xml");
                     const trackPoints = gpxDoc.querySelectorAll('trkpt');
-
+        
                     if (trackPoints.length > 0) {
                         const firstPoint = trackPoints[0];
                         const lastPoint = trackPoints[trackPoints.length - 1];
-
+        
                         const firstLat = parseFloat(firstPoint.getAttribute('lat'));
                         const firstLon = parseFloat(firstPoint.getAttribute('lon'));
                         const lastLat = parseFloat(lastPoint.getAttribute('lat'));
                         const lastLon = parseFloat(lastPoint.getAttribute('lon'));
-
-                        fileWaypoints.push({ start: [firstLat, firstLon], end: [lastLat, lastLon] });
-
+        
+                        fileWaypoints.push({ start: { lat: firstLat, lon: firstLon }, end: { lat: lastLat, lon: lastLon } });
+        
+                        const routeIndex = this.routeLayers.length + 1; // Index du chemin actuel
+                        const routeName = `chemin_${routeIndex}`; // Nom du chemin basé sur l'index
                         const routeLayer = new L.GPX(gpxData, {
                             async: true
                         }).on('loaded', (e) => {
@@ -254,8 +355,9 @@ var app = new Vue({
                         }).addTo(this.map);
                         routeLayer.selected = false; // Initialement non sélectionné
                         routeLayer.gpxData = gpxData; // Stocker les données GPX pour l'exportation
+                        routeLayer.routeName = routeName; // Stocker le nom du chemin dans la couche
                         this.routeLayers.push(routeLayer);
-
+        
                         for (let i = 0; i < trackPoints.length; i++) {
                             const point = trackPoints[i];
                             const lat = parseFloat(point.getAttribute('lat'));
@@ -265,7 +367,7 @@ var app = new Vue({
                     } else {
                         alert(`Le fichier GPX ${file.name} ne contient pas de points de piste.`);
                     }
-
+        
                     if (fileIndex === files.length - 1) {
                         this.fileWaypoints = fileWaypoints;
                         if (this.fileWaypoints.length > 1) {

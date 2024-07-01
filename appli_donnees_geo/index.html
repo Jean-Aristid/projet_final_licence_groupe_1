@@ -55,9 +55,20 @@
                     <i class="fas fa-scissors"></i> 
                 </button>
 
-                <button @click="imprimer" title="Exporter les chemins sélectionnés">
-                    <i class="fas fa-download"></i>
-                </button>
+                <div class="boutons_export">
+                    <div>
+                        <button @click="imprimerGPX" class="btn btn-primary" title="Exporter les chemins sélectionnés en GPX">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+    
+                    <div>
+                        <button @click="imprimerKML" class="btn btn-success" title="Exporter les chemins sélectionnés en KML">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    
+                </div>
             </div>
 
             <div class="file-input">
@@ -69,7 +80,7 @@
 
             <!-- Liste des chemins avec cases à cocher pour sélection -->
             <div v-for="(routeLayer, index) in routeLayers" :key="index">
-                <input type="checkbox" :id="'route-' + index" v-model="routeLayer.selected" />
+                <input type="checkbox" :id="'route-' + index" v-model="routeLayer.selected"/>
                 <label :for="'route-' + index">Chemin {{ index + 1 }}</label>
             </div>
         </div>
