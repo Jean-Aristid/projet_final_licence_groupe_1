@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte avec Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carte avec OpenStreetMap</h1>
+    <div id="map"></div>
+    <script>
+
+        
+        var map = L.map('map').setView([48.8566, 2.3522], 13); // Coordonnées par défaut (Paris)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        var locations = [
+            {latitude: 48.8566, longitude: 2.3522, name: 'Paris'}
+        ];
+
+        locations.forEach(function(location) {
+            L.marker([location.latitude, location.longitude]).addTo(map)
+                .bindPopup('<b>' + location.name + '</b>');
+        });
+
+
+        
+    </script>
+</body>
+</html>

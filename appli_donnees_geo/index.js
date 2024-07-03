@@ -284,10 +284,11 @@ var app = new Vue({
             trackPoints.forEach(point => {
                 const lat = point.getAttribute('lat');
                 const lon = point.getAttribute('lon');
-                kml += `\t\t\t${lon},${lat},0\n`;
+
+                kml += `\t\t\t\t\t\t\t${lon},${lat},0\n`;
             });
 
-            kml += `\t\t\t${endPoint.lon},${endPoint.lat},0\n
+            kml += `\t\t\t\t\t\t\t${endPoint.lon},${endPoint.lat},0\n
                             </coordinates>
                         </LineString>
                     </Placemark>

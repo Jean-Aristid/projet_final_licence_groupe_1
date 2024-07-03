@@ -1,0 +1,88 @@
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f4f4f4;
+}
+
+h1 {
+	text-align: center;
+	color: #333;
+	margin: 20px 0;
+}
+
+#controls {
+	display: flex;
+	flex-direction: row;
+	text-align: center;
+	margin: 40px;
+}
+
+#location-input {
+	width: 300px;
+	padding: 10px;
+	font-size: 16px;
+}
+
+button {
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	margin-left: 10px;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+#map {
+	height: 600px;
+	width: 80%;
+	margin: 0 auto;
+	border: 2px solid #ccc;
+	border-radius: 10px;
+}
+
+#fichier {
+	display : none;
+}
+
+#import {
+	padding: 10px 20px;
+	font-size: 16px;
+	cursor: pointer;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	margin-left: 10px;
+}
+
+#import:hover {
+	background-color: #0056b3;
+}
+
+
+
+#depart_arrivee{
+	display: flex ;
+	flex-direction: column ;
+	margin-left : 12px ;
+}
+
+.mode_de_transport{
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 200px;
+}
+
+
+#bouton_importer{
+	cursor:pointer;
+}
+

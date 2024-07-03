@@ -91,7 +91,7 @@ button.search-button:hover {
 
 .transport-option {
     background-color: #ffffff;
-    border: 2px solid #d0e5d1;
+    border: 2px solid #d0e5d1; 
     border-radius: 8px;
     padding: 12px;
     cursor: pointer;
