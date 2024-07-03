@@ -24,4 +24,8 @@ python3 manage.py runserver
 
 - Lancer dans le navigateur index.html
 
+<<<<<<< HEAD
 - Commencez à utiliser l'application
+=======
+- Commencez à utiliser l'application
+>>>>>>> branche_justine

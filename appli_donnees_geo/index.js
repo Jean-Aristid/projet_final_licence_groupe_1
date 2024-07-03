@@ -284,10 +284,11 @@ var app = new Vue({
             trackPoints.forEach(point => {
                 const lat = point.getAttribute('lat');
                 const lon = point.getAttribute('lon');
-                kml += `\t\t\t${lon},${lat},0\n`;
+
+                kml += `\t\t\t\t\t\t\t${lon},${lat},0\n`;
             });
 
-            kml += `\t\t\t${endPoint.lon},${endPoint.lat},0\n
+            kml += `\t\t\t\t\t\t\t${endPoint.lon},${endPoint.lat},0\n
                             </coordinates>
                         </LineString>
                     </Placemark>
@@ -561,77 +562,77 @@ var app = new Vue({
         },
 
         decouperChemin() {
-        const selectedLayer = this.routeLayers.find(layer => layer.selected);
-        if (!selectedLayer) {
-            alert('Veuillez sélectionner un chemin à découper.');
-            return;
-        }
+            const selectedLayer = this.routeLayers.find(layer => layer.selected);
+            if (!selectedLayer) {
+                alert('Veuillez sélectionner un chemin à découper.');
+                return;
+            }
 
-        const numParts = this.numParts;
-        if (numParts < 1) {
-            alert('Veuillez entrer un nombre valide de parties.');
-            return;
-        }
+            const numParts = this.numParts;
+            if (numParts < 1) {
+                alert('Veuillez entrer un nombre valide de parties.');
+                return;
+            }
 
-        fetch(selectedLayer.gpxData)
-            .then(response => response.text())
-            .then(data => {
-                const parser = new DOMParser();
-                const gpxDoc = parser.parseFromString(data, "application/xml");
-                const trackPoints = gpxDoc.querySelectorAll('trkpt');
-                const totalPoints = trackPoints.length;
+            fetch(selectedLayer.gpxData)
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const gpxDoc = parser.parseFromString(data, "application/xml");
+                    const trackPoints = gpxDoc.querySelectorAll('trkpt');
+                    const totalPoints = trackPoints.length;
 
-                if (totalPoints < numParts) {
-                    alert('Le nombre de parties est supérieur au nombre de points dans le chemin.');
-                    return;
-                }
-
-                const pointsPerPart = Math.floor(totalPoints / numParts);
-                let currentPart = 0;
-                let newTrackSegments = [];
-
-                for (let i = 0; i < totalPoints; i++) {
-                    if (i % pointsPerPart === 0 && currentPart < numParts) {
-                        if (currentPart > 0) {
-                            newTrackSegments[currentPart - 1].appendChild(trackPoints[i].cloneNode(true));
-                        }
-                        currentPart++;
-                        newTrackSegments[currentPart - 1] = gpxDoc.createElement('trkseg');
+                    if (totalPoints < numParts) {
+                        alert('Le nombre de parties est supérieur au nombre de points dans le chemin.');
+                        return;
                     }
-                    newTrackSegments[currentPart - 1].appendChild(trackPoints[i].cloneNode(true));
-                }
 
-                newTrackSegments.forEach((segment, index) => {
-                    const newGpxDoc = gpxDoc.cloneNode(false);
-                    const newTrack = gpxDoc.createElement('trk');
-                    newTrack.appendChild(segment);
-                    newGpxDoc.appendChild(newTrack);
+                    const pointsPerPart = Math.floor(totalPoints / numParts);
+                    let currentPart = 0;
+                    let newTrackSegments = [];
 
-                    const serializer = new XMLSerializer();
-                    const gpxString = serializer.serializeToString(newGpxDoc);
-                    const blob = new Blob([gpxString], { type: 'application/gpx+xml' });
-                    const url = URL.createObjectURL(blob);
-
-                    const routeLayer = new L.GPX(url, {
-                        async: true,
-                        marker_options: {
-                            startIconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-green.png',
-                            endIconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
-                            shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png'
-                        },
-                        polyline_options: {
-                            color: this.colors[this.routeLayers.length % this.colors.length]
+                    for (let i = 0; i < totalPoints; i++) {
+                        if (i % pointsPerPart === 0 && currentPart < numParts) {
+                            if (currentPart > 0) {
+                                newTrackSegments[currentPart - 1].appendChild(trackPoints[i].cloneNode(true));
+                            }
+                            currentPart++;
+                            newTrackSegments[currentPart - 1] = gpxDoc.createElement('trkseg');
                         }
-                    }).on('loaded', e => {
-                        this.map.fitBounds(e.target.getBounds());
-                    }).addTo(this.map);
+                        newTrackSegments[currentPart - 1].appendChild(trackPoints[i].cloneNode(true));
+                    }
 
-                    routeLayer.selected = false; // Initialement non sélectionné
-                    routeLayer.gpxData = url; // Stocker l'URL du fichier GPX pour l'exportation
-                    this.routeLayers.push(routeLayer);
-                });
-            })
+                    newTrackSegments.forEach((segment, index) => {
+                        const newGpxDoc = gpxDoc.cloneNode(false);
+                        const newTrack = gpxDoc.createElement('trk');
+                        newTrack.appendChild(segment);
+                        newGpxDoc.appendChild(newTrack);
+
+                        const serializer = new XMLSerializer();
+                        const gpxString = serializer.serializeToString(newGpxDoc);
+                        const blob = new Blob([gpxString], { type: 'application/gpx+xml' });
+                        const url = URL.createObjectURL(blob);
+
+                        const routeLayer = new L.GPX(url, {
+                            async: true,
+                            marker_options: {
+                                startIconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-green.png',
+                                endIconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
+                                shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png'
+                            },
+                            polyline_options: {
+                                color: this.colors[this.routeLayers.length % this.colors.length]
+                            }
+                        }).on('loaded', e => {
+                            this.map.fitBounds(e.target.getBounds());
+                        }).addTo(this.map);
+
+                        routeLayer.selected = false; // Initialement non sélectionné
+                        routeLayer.gpxData = url; // Stocker l'URL du fichier GPX pour l'exportation
+                        this.routeLayers.push(routeLayer);
+                    });
+                })
             .catch(error => console.error('Erreur lors de la récupération ou du traitement des données GPX:', error));
+        }
     }
-}
 });
