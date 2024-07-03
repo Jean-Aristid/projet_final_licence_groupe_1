@@ -165,8 +165,9 @@ button i {
 }
 
 .file-input-label:hover {
-    background-color: #f0f4f0;
-    border-color: #7dbe7f;
+    /*background-color: #f0f4f0;*/
+    /*background-color: #7dbe7f;*/
+    background-color: #6abf6a;
 }
 
 #file-input {
