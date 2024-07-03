@@ -139,3 +139,63 @@ body, html {
     height: 100%;
     width: 100%;
 }
+
+@media screen and (max-width : 480px) {
+    body {
+        display : flex;
+        flex-direction : column;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width : 100%;
+        font-family: Arial, sans-serif;
+    }
+    #controls {
+        order : 2;
+        display: flex;
+        flex-wrap : wrap;
+        padding: 10px;
+        background-color: #f2f2f2;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        position: relative;
+        justify-content: center; /* Centrer les éléments horizontalement */
+        align-items: center; /* Centrer les éléments verticalement */
+        max-width: 100%; /* Ajustement pour limiter la largeur des contrôles */
+        width: 96%; /* Assurer que les contrôles occupent toute la largeur disponible */
+        gap : 5px;
+    }
+
+    #app {
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Centrer verticalement les éléments */
+        align-items: center; /* Centrer horizontalement les éléments */
+        height: 100%;
+        width : 100%;
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+
+    .file-input-label i {
+        font-size: 20px;
+        margin-top: 15px;
+    }
+    
+    .file-input-label:hover {
+        background-color: #0056b3;
+    }
+    
+    .file-input input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+}
