@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte avec Leaflet et Vue.js</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.3.1/gpx.min.js"></script>
+    <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+    <link rel="stylesheet" href="index.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        #controls {
+            width: 300px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Carte avec OpenStreetMap et Vue.js</h1>
+        <div id="controls">
+            <div>
+                <input type="text" v-model="location" placeholder="Entrez un lieu" />
+                <button @click="chercher">Chercher</button>
+            </div>
+            <div>
+                <input type="text" v-model="startLocation" placeholder="Départ" />
+                <input type="text" v-model="endLocation" placeholder="Arrivée" />
+            </div>
+            <div>
+                <label>
+                    <input type="radio" v-model="transportType" value="0"> Véhicule motorisé
+                </label>
+                <label>
+                    <input type="radio" v-model="transportType" value="1"> Piéton
+                </label>
+                <label>
+                    <input type="radio" v-model="transportType" value="2"> Cycliste
+                </label>
+                <label>
+                    <input type="radio" v-model="transportType" value="3"> Véhicule sans permis
+                </label>
+            </div>
+            <button @click="trouverChemin">Trouver Chemin</button>
+            <button @click="imprimer">Imprimer</button>
+            <button @click="exporterCheminGpx">Exporter Chemin GPX</button>
+            <button @click="exporterCheminKml">Exporter Chemin KML</button>
+            <div>
+                <label for="fichier">Importer Fichier Carte</label>
+                <input type="file" id="fichier" @change="chargerFichierCarte" />
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+    
+    <script>
+        const express = require('express');
+        const cors = require('cors');
+        const app = express();
+
+        // Utiliser cors pour autoriser toutes les origines
+        function configureCors() {
+            app.use(cors());
+        }
+
+        // Définir une route pour l'API
+        function configureApiRoute() {
+            app.get('/api', (req, res) => {
+                const gpxData = `<?xml version="1.0"?>
+                <gpx version="1.1" creator="example">
+                <wpt lat="${req.query.lat1}" lon="${req.query.lon1}">
+                    <name>Start Point</name>
+                </wpt>
+                <wpt lat="${req.query.lat2}" lon="${req.query.lon2}">
+                    <name>End Point</name>
+                </wpt>
+                </gpx>`;
+                res.header('Content-Type', 'application/gpx+xml');
+                res.send(gpxData);
+            });
+        }
+
+        // Initialiser le serveur
+        function startServer() {
+            configureCors();
+            configureApiRoute();
+            app.listen(8000, () => {
+                console.log('Server is running on port 8000');
+            });
+        }
+
+        startServer();
+
+    </script>
+    <script src="index.js"></script>
+
+</body>
+</html>
